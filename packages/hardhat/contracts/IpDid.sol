@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 
 contract IpDid {
 
-  event SetDid(address did, string memory didDoc);
+  event SetDid(address did, string didDoc);
   
   mapping(address => string) public dids;
 
