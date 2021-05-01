@@ -4,20 +4,56 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const { ethers } = require("ethers");
+require('dotenv').config()
 
 const app = new Koa();
 const router = new Router();
 
-const provider = new ethers.providers.JsonRpcProvider(); // default: localhost:8545
-const contractAddress = fs.readFileSync(path.join(__dirname, "..", "hardhat", "artifacts", "IpDid.address"), "utf-8")
-const contractJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "hardhat", "artifacts", "contracts", "IpDid.sol", "IpDid.json"), "utf-8"))
+const provider = new ethers.providers.JsonRpcProvider(process.env.uniresolver_driver_did_tw_provider); // default: localhost:8545
+const contractAddress = process.env.uniresolver_driver_did_tw_contract_address
+const contractJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "IpDid.json"), "utf-8"))
 const contractABI = contractJSON.abi;
 
-router.get('/:did', async (ctx, next) => {
+router.get('/1.0/identifiers/:did', async (ctx, next) => {
+    let did = ctx.params.did;
+    if (did == "0xtestaddr") {
+        ctx.body = {
+            "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld"
+            ],
+            "id": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
+            "verificationMethod": [
+                {
+                    "id": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
+                    "type": "EcdsaSecp256k1RecoveryMethod2020",
+                    "controller": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
+                    "blockchainAccountId": "0xF3beAC30C498D9E26865F34fCAa57dBB935b0D74@eip155:1"
+                },
+                {
+                    "id": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey",
+                    "type": "EcdsaSecp256k1VerificationKey2019",
+                    "controller": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
+                    "publicKeyHex": "0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479"
+                }
+            ],
+            "authentication": [
+                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
+                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey"
+            ],
+            "assertionMethod": [
+                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
+                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey"
+            ]
+        }
+        return
+    }
     try {
-        const did = ctx.params.did;
+        did = `did:tw:${did}`;
         const contract = new ethers.Contract(contractAddress, contractABI, provider)
-        ctx.body = { didDoc: JSON.parse(await contract.dids(did)) };
+        console.log(JSON.parse(await contract.dids(did)));
+        ctx.body = JSON.parse(await contract.dids(did));
+
     } catch (error) {
         ctx.body = { errMsg: error };
     }
@@ -27,6 +63,6 @@ router.get('/:did', async (ctx, next) => {
 app
     .use(router.routes())
     .use(router.allowedMethods())
-    .listen(3001);
+    .listen(8080);
 
-console.log(`did resolver is listening on: http://localhost:3001 ...`);
+console.log(`did resolver is listening on: http://localhost:8080 ...`);

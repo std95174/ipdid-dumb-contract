@@ -1,0 +1,20 @@
+version: "3.5"
+networks:
+  default:
+    name: universal-resolver
+services:
+  uni-resolver-web:
+    image: universalresolver/uni-resolver-web:latest
+    ports:
+      - "8080:8080"
+  uni-resolver-driver-did-uport:
+    image: uport/uni-resolver-driver-did-uport:2.1.0
+    ports:
+      - "8083:8081"
+  uni-resolver-driver-did-tw:
+    build: ../
+    environment: 
+      uniresolver_driver_did_tw_contract_address: ${uniresolver_driver_did_tw_contract_address}
+      uniresolver_driver_did_tw_provider: ${uniresolver_driver_did_tw_provider}
+    ports:
+      - "8120:8080"

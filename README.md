@@ -41,18 +41,32 @@ yarn deploy
 
 ```
 
+* 複製合約地址檔案`/packages/hardhat/artifacts/IpDid.address`的內容到`/packages/universal-resolver-driver/universal-resolver/.env`的`uniresolver_driver_did_tw_contract_address`中
+* 複製合約ABI
+
+  `cp /packages/hardhat/artifacts/contracts/IpDid.sol/IpDid.json /packages/universal-resolver-driver/IpDid.json`
+
 > in a fourth terminal window (resolver):
 
+* 修改 `/packages/universal-resolver-driver/universal-resolver/.env`的`uniresolver_driver_did_tw_provider`
+  * 使用docker: http://host.docker.internal:8545
+  * 不使用docker: http://localhost:8545
+  * 使用其他節點: http://{nodeIp}:{nodePort}
+
 ```bash
-cd ipdid-dumb-contract/packages/universal-resolver-driver
-node driver.js
+# Build uni-resolver-web locally:
+docker build -f ./uni-resolver-web/docker/Dockerfile . -t universalresolver/uni-resolver-web
+
+cd /packages/universal-resolver-driver/universal-resolver
+docker-compose build
+docker-compose up -d
 
 ```
 
 # Test Steps
 
   1. 開啟 <http://localhost:3000>
-  2. setDid, i.e., `did: 0xe371c5123e0131AbBbC7BA60c27896049C6cb892`
+  2. setDid, i.e., `did:tw:0xe371c5123e0131AbBbC7BA60c27896049C6cb892`
 
   ```json
     {
@@ -86,4 +100,4 @@ node driver.js
     }
   ```
 
-  3. 開啟 <http://localhost:3001/{did}>，將`did`換成要查詢的值。即可得到`did document`。
+  3. 開啟 <http://localhost:8080/1.0/identifiers/did:tw:{address}>，將`address`換成要查詢的值。即可得到`did document`。
