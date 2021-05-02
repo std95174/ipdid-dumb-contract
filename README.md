@@ -39,6 +39,15 @@ yarn chain
 cd ipdid-dumb-contract
 yarn deploy
 
+
+```
+
+部署在SKALE Chain
+
+```bash
+cp /packages/hardhat/.env.example /packages/hardhat/.env
+# change your test private key to /packages/hardhat/.env
+yarn deploy --network skale
 ```
 
 * 複製合約地址檔案`/packages/hardhat/artifacts/IpDid.address`的內容到`/packages/universal-resolver-driver/universal-resolver/.env`的`uniresolver_driver_did_tw_contract_address`中
@@ -52,6 +61,7 @@ yarn deploy
   * 使用docker: http://host.docker.internal:8545
   * 不使用docker: http://localhost:8545
   * 使用其他節點: http://{nodeIp}:{nodePort}
+  * SKALE Chain: https://dev-testnet-v1-1.skalelabs.com
 
 ```bash
 # Build uni-resolver-web locally:

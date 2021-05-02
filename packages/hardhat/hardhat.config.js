@@ -94,6 +94,11 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
+    skale: {
+      url: 'https://dev-testnet-v1-1.skalelabs.com',
+      gasPrice: 1000000000,
+      accounts: [process.env.skale_private_key],
+    }
   },
   solidity: {
     compilers: [
