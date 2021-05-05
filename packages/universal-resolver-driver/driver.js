@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const { ethers } = require("ethers");
+const bodyParser = require('koa-bodyparser');
 require('dotenv').config()
 
 const app = new Koa();
@@ -49,18 +50,53 @@ router.get('/1.0/identifiers/:did', async (ctx, next) => {
         return
     }
     try {
-        did = `did:tw:${did}`;
-        const contract = new ethers.Contract(contractAddress, contractABI, provider)
-        console.log(JSON.parse(await contract.dids(did)));
-        ctx.body = JSON.parse(await contract.dids(did));
+        if (did.split("did:tw:").length != 2) {
+            did = `did:tw:${did}`;
+        }
 
+        console.log(did);
+        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const didDocument = await contract.dids(did);
+        try {
+            if (typeof JSON.parse(didDocument) == "object") {
+                ctx.body = JSON.parse(await contract.dids(did));
+                return
+            }
+        } catch (e) {
+            ctx.body = didDocument;
+        }
     } catch (error) {
         ctx.body = { errMsg: error };
     }
-
 });
 
+router.post('/did', async (ctx, next) => {
+    try {
+        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const wallet = new ethers.Wallet(process.env.skale_private_key, provider)
+        let contractWithSigner = contract.connect(wallet);
+
+        let { did, didDocument } = ctx.request.body;
+        // check format
+        if (did.split("did:tw:").length != 2) {
+            ctx.status = 400;
+            ctx.body = {
+                errMsg: "wrong did format"
+            }
+            return
+        }
+        let tx = await contractWithSigner.setDid(did, didDocument);
+        const receipt = await tx.wait();
+        ctx.body = { receipt: receipt }
+
+    } catch (error) {
+        console.log(error);
+        ctx.body = { errMsg: error };
+    }
+})
+
 app
+    .use(bodyParser())
     .use(router.routes())
     .use(router.allowedMethods())
     .listen(8080);

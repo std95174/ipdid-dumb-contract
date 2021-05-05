@@ -16,5 +16,6 @@ services:
     environment: 
       uniresolver_driver_did_tw_contract_address: ${uniresolver_driver_did_tw_contract_address}
       uniresolver_driver_did_tw_provider: ${uniresolver_driver_did_tw_provider}
+      skale_private_key: ${skale_private_key}
     ports:
       - "8120:8080"

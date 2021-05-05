@@ -111,3 +111,23 @@ docker-compose up -d
   ```
 
   3. 開啟 <http://localhost:8080/1.0/identifiers/did:tw:{address}>，將`address`換成要查詢的值。即可得到`did document`。
+
+## Set DID
+
+Add your skale private key to `/packages/universal-resolver-driver/universal-resolver/.env`
+
+Post data to API like:
+
+
+  ```sh
+  didDocument=$(cat   << EOF
+  "{\n      \"@context\": [\n        \"https://www.w3.org/ns/did/v1\",\n        \"https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld\"\n      ],\n      \"id\": \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479\",\n      \"verificationMethod\": [\n        {\n          \"id\": \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller\",\n          \"type\": \"EcdsaSecp256k1RecoveryMethod2020\",\n          \"controller\": \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479\",\n          \"blockchainAccountId\": \"0xF3beAC30C498D9E26865F34fCAa57dBB935b0D74@eip155:1\"\n        },\n        {\n          \"id\": \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey\",\n          \"type\": \"EcdsaSecp256k1VerificationKey2019\",\n          \"controller\": \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479\",\n          \"publicKeyHex\": \"0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479\"\n        }\n      ],\n      \"authentication\": [\n        \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller\",\n        \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey\"\n      ],\n      \"assertionMethod\": [\n        \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller\",\n        \"did:ethr:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey\"\n      ]\n    }"
+EOF
+)  
+  curl --location --request POST 'http://localhost:8120/did' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "did": "did:tw:testDid",
+    "didDocument": '$didDocument'
+  }'
+  ```
