@@ -131,3 +131,23 @@ EOF
     "didDocument": '$didDocument'
   }'
   ```
+
+## Call API on Vercel
+  
+1. Send data to IPFS, get cid
+2. Write did and cid to contract
+  
+  ```sh
+  curl --location --request POST 'http://universal-resolver-driver-frankwang95174.vercel.app/did' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+      "did": "did:ipdid:frank",
+      "cid": "QmVE6LFaMLJAFmnC9QX1k4eis1k4aBg5YZzBSFKormLVB5"
+  }'
+  ```
+
+3. get data from did by resolver
+
+  ```sh
+  curl --location --request GET 'https://universal-resolver-driver-frankwang95174.vercel.app/1.0/identifiers/did:ipdid:frank'
+  ```

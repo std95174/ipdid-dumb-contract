@@ -5,7 +5,9 @@ const path = require('path');
 const axios = require('axios');
 const { ethers } = require("ethers");
 const bodyParser = require('koa-bodyparser');
+const cors = require('@koa/cors');
 require('dotenv').config()
+const createClient = require('ipfs-http-client')
 
 const app = new Koa();
 const router = new Router();
@@ -15,58 +17,82 @@ const contractAddress = process.env.uniresolver_driver_did_tw_contract_address
 const contractJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "IpDid.json"), "utf-8"))
 const contractABI = contractJSON.abi;
 
+const testDidDocument = {
+    '@context': [
+        "https://www.w3.org/ns/did/v1",
+        "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld"
+    ],
+    id: "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
+    verificationMethod: [
+        {
+            id: "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
+            type: "EcdsaSecp256k1RecoveryMethod2020",
+            controller: "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
+            blockchainAccountId: "0xF3beAC30C498D9E26865F34fCAa57dBB935b0D74@eip155:1"
+        },
+        {
+            id: "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey",
+            type: "EcdsaSecp256k1VerificationKey2019",
+            controller: "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
+            publicKeyHex: "0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479"
+        }
+    ],
+    authentication: [
+        "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
+        "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey"
+    ],
+    assertionMethod: [
+        "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
+        "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey"
+    ]
+}
+
 router.get('/1.0/identifiers/:did', async (ctx, next) => {
     let did = ctx.params.did;
     if (did == "0xtestaddr") {
         ctx.body = {
-            "@context": [
-                "https://www.w3.org/ns/did/v1",
-                "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld"
-            ],
-            "id": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
-            "verificationMethod": [
-                {
-                    "id": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
-                    "type": "EcdsaSecp256k1RecoveryMethod2020",
-                    "controller": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
-                    "blockchainAccountId": "0xF3beAC30C498D9E26865F34fCAa57dBB935b0D74@eip155:1"
-                },
-                {
-                    "id": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey",
-                    "type": "EcdsaSecp256k1VerificationKey2019",
-                    "controller": "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479",
-                    "publicKeyHex": "0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479"
-                }
-            ],
-            "authentication": [
-                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
-                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey"
-            ],
-            "assertionMethod": [
-                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controller",
-                "did:tw:0x03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479#controllerKey"
-            ]
+            didDocument: testDidDocument
         }
         return
     }
     try {
-        if (did.split("did:ipdid:").length != 2) {
-            did = `did:ipdid:${did}`;
-        }
-
         console.log(did);
         const contract = new ethers.Contract(contractAddress, contractABI, provider);
-        const didDocument = await contract.dids(did);
-        try {
-            if (typeof JSON.parse(didDocument) == "object") {
-                ctx.body = JSON.parse(await contract.dids(did));
-                return
-            }
-        } catch (e) {
-            ctx.body = didDocument;
+        const cid = await contract.dids(did);
+        if (cid.length == 0) {
+            ctx.status = 404;
+            ctx.body = {
+                did: did,
+                status: { error: "no CID found" }
+            };
+            return
         }
+
+        // get did document from ipfs
+        try {
+            const client = createClient('https://ipfs.infura.io:5001')
+            const result = await client.cat(cid);
+
+            let didDocument;
+            for await (const item of result) {
+                didDocument = (item.toString());
+            }
+
+            ctx.body = {
+                did: did,
+                cid: cid,
+                didDocument: JSON.parse(didDocument)
+            };
+        } catch (error) {
+            ctx.body = {
+                did: did,
+                cid: cid,
+                status: { error: "no DID Document found" }
+            };
+        }
+
     } catch (error) {
-        ctx.body = { errMsg: error };
+        ctx.body = { error: error };
     }
 });
 
@@ -76,11 +102,9 @@ router.post('/did', async (ctx, next) => {
         const wallet = new ethers.Wallet(process.env.skale_private_key, provider)
         let contractWithSigner = contract.connect(wallet);
 
-        let { did, didDocument } = ctx.request.body;
+        let { did, cid } = ctx.request.body;
 
-        // TODO: check format
-
-        let tx = await contractWithSigner.setDid(did, didDocument);
+        let tx = await contractWithSigner.setDid(did, cid);
         const receipt = await tx.wait();
         ctx.body = { receipt: receipt }
 
@@ -90,7 +114,23 @@ router.post('/did', async (ctx, next) => {
     }
 })
 
+// for test
+router.post('/ipfs', async (ctx, next) => {
+    const data = testDidDocument;
+
+    // connect to a different API
+    const client = createClient('https://ipfs.infura.io:5001')
+    // call Core API methods
+    const doc = JSON.stringify(testDidDocument);
+    const { cid } = await client.add(doc);
+    console.log(cid);
+    ctx.body = {
+        cid: cid
+    }
+})
+
 app
+    .use(cors())
     .use(bodyParser())
     .use(router.routes())
     .use(router.allowedMethods())
