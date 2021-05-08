@@ -103,8 +103,6 @@ router.get('/1.0/identifiers/:did', async (ctx, next) => {
             const result = await axios.default.get(`https://ipfs.infura.io:5001/api/v0/block/get?arg=${cid}`);
             console.log(result.data);
 
-
-
             // let didDocument;
             // for await (const item of result) {
             //     didDocument = (item.toString());
@@ -113,7 +111,7 @@ router.get('/1.0/identifiers/:did', async (ctx, next) => {
             ctx.body = {
                 did: did,
                 cid: cid,
-                didDocument: result.data,
+                didDocument: (result.data),
                 didResolutionMetadata: testDidResolutionMetadata,
                 didDocumentMetadata: testDidDocumentMetadata
             };
