@@ -16,4 +16,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 8080
-CMD [ "node", "driver.js" ]
+CMD [ "node", "index.js" ]

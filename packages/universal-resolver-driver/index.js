@@ -50,8 +50,8 @@ router.get('/1.0/identifiers/:did', async (ctx, next) => {
         return
     }
     try {
-        if (did.split("did:tw:").length != 2) {
-            did = `did:tw:${did}`;
+        if (did.split("did:ipdid:").length != 2) {
+            did = `did:ipdid:${did}`;
         }
 
         console.log(did);
@@ -77,14 +77,9 @@ router.post('/did', async (ctx, next) => {
         let contractWithSigner = contract.connect(wallet);
 
         let { did, didDocument } = ctx.request.body;
-        // check format
-        if (did.split("did:tw:").length != 2) {
-            ctx.status = 400;
-            ctx.body = {
-                errMsg: "wrong did format"
-            }
-            return
-        }
+
+        // TODO: check format
+
         let tx = await contractWithSigner.setDid(did, didDocument);
         const receipt = await tx.wait();
         ctx.body = { receipt: receipt }
