@@ -6,6 +6,11 @@
             "use": "@vercel/node"
         }
     ],
+    "env": {
+"uniresolver_driver_did_tw_contract_address": "0xE70A5C358Db301D1444a258db536d0488782c9C0",
+"uniresolver_driver_did_tw_provider": "https://dev-testnet-v1-0.skalelabs.com",
+"skale_private_key": "97bc3ff679700f734acbce192867b254cd0c386fc6b49f1237eda5af05814390"
+    },
     "routes": [
         {
             "src": "/(.*)",

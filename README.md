@@ -42,7 +42,7 @@ yarn deploy
 
 ```
 
-部署在SKALE Chain
+To deploy to the SKALE chain
 
 ```bash
 cp /packages/hardhat/.env.example /packages/hardhat/.env
@@ -50,17 +50,17 @@ cp /packages/hardhat/.env.example /packages/hardhat/.env
 yarn deploy --network skale
 ```
 
-* 複製合約地址檔案`/packages/hardhat/artifacts/IpDid.address`的內容到`/packages/universal-resolver-driver/universal-resolver/.env`的`uniresolver_driver_did_tw_contract_address`中
-* 複製合約ABI
+* copy contract address from file`/packages/hardhat/artifacts/IpDid.address` context `/packages/universal-resolver-driver/universal-resolver/.env` to `uniresolver_driver_did_tw_contract_address`
+* copy contract ABI
 
   `cp /packages/hardhat/artifacts/contracts/IpDid.sol/IpDid.json /packages/universal-resolver-driver/IpDid.json`
 
 > in a fourth terminal window (resolver):
 
-* 修改 `/packages/universal-resolver-driver/universal-resolver/.env`的`uniresolver_driver_did_tw_provider`
-  * 使用docker: http://host.docker.internal:8545
-  * 不使用docker: http://localhost:8545
-  * 使用其他節點: http://{nodeIp}:{nodePort}
+* modify `/packages/universal-resolver-driver/universal-resolver/.env`的`uniresolver_driver_did_tw_provider`
+  * run docker: http://host.docker.internal:8545
+  * without docker: http://localhost:8545
+  * use other node: http://{nodeIp}:{nodePort}
   * SKALE Chain: https://dev-testnet-v1-1.skalelabs.com
 
 ```bash
@@ -75,7 +75,7 @@ docker-compose up -d
 
 # Test Steps
 
-  1. 開啟 <http://localhost:3000>
+  1. surf <http://localhost:3000>
   2. setDid, i.e., `did:tw:0xe371c5123e0131AbBbC7BA60c27896049C6cb892`
 
   ```json
@@ -110,7 +110,7 @@ docker-compose up -d
     }
   ```
 
-  3. 開啟 <http://localhost:8080/1.0/identifiers/did:tw:{address}>，將`address`換成要查詢的值。即可得到`did document`。
+  3. surf <http://localhost:8080/1.0/identifiers/did:ipdid:{CID}>， change `CID` to query will get`did document`。
 
 ## Set DID
 

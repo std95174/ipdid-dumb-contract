@@ -4,7 +4,7 @@ const chalk = require("chalk");
 
 require("@nomiclabs/hardhat-waffle");
 require("@tenderly/hardhat-tenderly")
-
+require('@nomiclabs/hardhat-ethers');
 require("@nomiclabs/hardhat-etherscan");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
@@ -21,7 +21,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "localhost";
+const defaultNetwork = "skale";
 
 function mnemonic() {
   try {
@@ -95,7 +95,7 @@ module.exports = {
       },
     },
     skale: {
-      url: 'https://dev-testnet-v1-1.skalelabs.com',
+      url: 'https://dev-testnet-v1-0.skalelabs.com',
       gasPrice: 1000000000,
       accounts: [process.env.skale_private_key],
     }

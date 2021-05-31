@@ -14,6 +14,7 @@ const router = new Router();
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.uniresolver_driver_did_tw_provider); // default: localhost:8545
 const contractAddress = process.env.uniresolver_driver_did_tw_contract_address
+console.log(contractAddress)
 const contractJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "IpDid.json"), "utf-8"))
 const contractABI = contractJSON.abi;
 
@@ -82,6 +83,7 @@ router.get('/1.0/identifiers/:did', async (ctx, next) => {
         }
         return
     }
+console.log('try didi contract, next line')
     try {
         console.log(did);
         const contract = new ethers.Contract(contractAddress, contractABI, provider);
@@ -97,6 +99,7 @@ router.get('/1.0/identifiers/:did', async (ctx, next) => {
         }
 
         // get did document from ipfs
+console.log('try ipfs, next line')
         try {
             const result = await axios.default.get(`https://ipfs.infura.io:5001/api/v0/block/get?arg=${cid}`);
             ctx.body = {
